@@ -1,0 +1,66 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: install spc
+      apt: 
+        name: software-properties-common
+        state: present
+    - name: add repositories
+      apt_repository: 
+        repo: 'ppa:nextepc/nextepc'
+        state: present
+    - name: update
+      apt: 
+        update_cache: yes
+        upgrade: yes
+        cache_valid_time: 86400
+    - name: install nextepc-core
+      apt:
+        name: nextepc
+        state: present
+    - name: install curl
+      apt:
+        name: curl
+        state: present
+    - name: get nodejs
+      shell: 'curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -'
+      args:
+        warn: false
+    - name: get webui
+      shell: 'curl -sL https://nextepc.org/static/webui/install | sudo -E bash -'
+      args:
+        warn: false
+    - name: check mme is running 
+      systemd:
+        name: nextepc-mmed
+        state: started
+        enabled: yes
+    - name: check sgw is running 
+      systemd:
+        name: nextepc-sgwd
+        state: started
+        enabled: yes
+    - name: check pgw is running 
+      systemd:
+        name: nextepc-pgwd
+        state: started
+        enabled: yes
+    - name: check hss is running 
+      systemd:
+        name: nextepc-hssd
+        state: started
+        enabled: yes
+    - name: check pcrf is running 
+      systemd:
+        name: nextepc-pcrfd
+        state: started
+        enabled: yes
+    - name: copy mme 
+      copy:
+        src: ./mme.conf
+        dest: /etc/nextepc/mme.conf
+    - name: copy sgw 
+      copy:
+        src: ./sgw.conf
+        dest: /etc/nextepc/sgw.conf
